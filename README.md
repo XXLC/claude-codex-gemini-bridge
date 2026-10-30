@@ -1,90 +1,96 @@
 # claude-codex-gemini-bridge
 
-Tài liệu và bộ công cụ bổ trợ giúp ba agent lập trình chạy cục bộ gồm Claude Code (Anthropic), Codex (OpenAI) và Gemini (Google, qua Antigravity) nhắn tin và giao việc trực tiếp cho nhau mà không cần người dùng chuyển tiếp thủ công qua khung chat. Trong mô hình này, Claude Code giữ vai trò điều phối và trực tiếp làm phần việc của mình, còn Codex và Gemini nhận các phần việc được phân công hoặc thay thế nhau khi một bên hết quota.
+[Tiếng Việt](README.vi.md) | English
 
-## Tình trạng kiểm nghiệm thực tế
+Documentation and supporting tools that let three locally running coding agents - Claude Code (Anthropic), Codex (OpenAI), and Gemini (Google, via Antigravity) - message and delegate tasks directly to one another without the user manually forwarding messages through the chat box. In this model, Claude Code acts as the coordinator while also doing its own share of the work, and Codex and Gemini take assigned tasks or cover for each other when one side runs out of quota.
 
-Lưu ý ngay từ đầu: Toàn bộ thiết lập, mã nguồn và hướng dẫn trong repo này mới chỉ được kiểm nghiệm trên một máy Windows duy nhất.
+## Tested status
 
-- **Môi trường đã kiểm ([ĐÃ KIỂM])**: Windows 11 (một máy), Claude Code `2.1.312` (extension chạy trong VS Code và trong Antigravity IDE), Codex CLI `0.165.0` (cài bằng `npm`, có extension trong IDE), Antigravity CLI `agy` `1.4.10`, Node `24.15`.
-- **Môi trường chưa kiểm ([CHƯA KIỂM])**: macOS, Linux, máy Windows khác, các IDE khác và cấu hình nhiều máy. Đường dẫn tới thư viện của bridge đã được tham số hóa (biến `BRIDGE_LIB_DIR`) và bộ test chạy được trên máy không có Claude hay Codex nhờ thư viện giả, nhưng các hướng dẫn cài (PowerShell, `%LOCALAPPDATA%`, Task Scheduler, `codex.exe`) vẫn viết cho Windows. Tuyên bố hỗ trợ macOS qua SSH của bridge gốc cũng chưa được chúng tôi thử nghiệm ([CHƯA KIỂM]).
+Note upfront: All setup steps, source code, and instructions in this repo have only been tested on a single Windows machine.
 
-## Các chiều liên lạc và trạng thái
+Status labels: [VERIFIED] = actually run and observed; [REPORTED] = stated by the maintainer without logs in this repo; [NOT TESTED] = never tried. Note that the detailed documents under `docs/` still use the Vietnamese labels (ĐÃ KIỂM = VERIFIED, BÁO CÁO = REPORTED, CHƯA KIỂM = NOT TESTED).
 
-| Chiều liên lạc | Cơ chế thực hiện | Trạng thái |
+- **Tested environment ([VERIFIED])**: Windows 11 (single machine), Claude Code `2.1.312` (extension running in VS Code and in Antigravity IDE), Codex CLI `0.165.0` (installed via `npm`, with IDE extension), Antigravity CLI `agy` `1.4.10`, Node `24.15`.
+- **Untested environments ([NOT TESTED])**: macOS, Linux, other Windows machines, other IDEs, and multi-machine setups. The path to the bridge library has been parameterized (`BRIDGE_LIB_DIR` variable) and the test suite runs on machines without Claude or Codex using a mock library, but the installation instructions (PowerShell, `%LOCALAPPDATA%`, Task Scheduler, `codex.exe`) are still written for Windows. The upstream bridge's claimed macOS support over SSH has also not been tested by us ([NOT TESTED]).
+
+## Communication directions and status
+
+| Direction | Mechanism | Status |
 |---|---|---|
-| Claude -> Codex | Công cụ `send_to_codex` của bridge, bắt buộc đặt `transport: "terminal"` | [ĐÃ KIỂM] |
-| Codex -> Claude | Công cụ `send_to_claude` của bridge | [ĐÃ KIỂM] |
-| Gemini -> Claude | Công cụ `send_to_claude` của MCP `gemini-bridge` (hoặc script dự phòng) | [ĐÃ KIỂM] |
-| Gemini -> Codex | Công cụ `send_to_codex` của MCP `gemini-bridge` (đi qua `codex queue`) | [ĐÃ KIỂM], chưa rõ thời điểm phía Codex đọc tin |
-| Claude -> Gemini | Lệnh `agy -p` (mở một phiên Gemini mới không tương tác) | [ĐÃ KIỂM] |
-| Codex -> Gemini | Lệnh `agy -p` chạy qua lệnh shell của Codex | [ĐÃ KIỂM] |
+| Claude -> Codex | Bridge `send_to_codex` tool, requires setting `transport: "terminal"` | [VERIFIED] |
+| Codex -> Claude | Bridge `send_to_claude` tool | [VERIFIED] |
+| Gemini -> Claude | `send_to_claude` tool of the `gemini-bridge` MCP (or fallback script) | [VERIFIED] |
+| Gemini -> Codex | `send_to_codex` tool of the `gemini-bridge` MCP (goes through `codex queue`) | [VERIFIED], exact timing of when Codex reads the message is unclear |
+| Claude -> Gemini | `agy -p` command (opens a new non-interactive Gemini session) | [VERIFIED] |
+| Codex -> Gemini | `agy -p` command run via Codex shell command | [VERIFIED] |
 
-Giới hạn chung:
-- Không chiều liên lạc nào có xác nhận đã đọc (`acknowledged: false`).
-- Hội thoại Gemini đang mở sẵn trong Antigravity IDE không có hộp thư nhận tin đẩy vào; Gemini chỉ nhận việc khi được gọi bằng `agy -p` hoặc khi tự chạy công cụ.
+General limitations:
+- No communication direction provides a read receipt (`acknowledged: false`).
+- An already-open Gemini conversation in Antigravity IDE has no inbox for pushed messages; Gemini only receives tasks when invoked via `agy -p` or when it runs a tool itself.
 
-## Kiến trúc tổng quan
+## Architecture overview
 
 ```mermaid
 flowchart TB
-    Claude["Claude Code (Extension VS Code / Antigravity IDE)"]
-    Codex["Codex (Extension IDE / CLI)"]
+    Claude["Claude Code (VS Code / Antigravity IDE extension)"]
+    Codex["Codex (IDE extension / CLI)"]
     GeminiIDE["Gemini (Antigravity IDE / agy)"]
     Bridge["KeeVeeG/codex-claude-desktop-bridge (lib/claude-desktop.mjs, lib/codex-daemon.mjs)"]
-    Daemon["Daemon Codex (codex app-server daemon / codex queue)"]
-    MCP["MCP gemini-bridge (src/gemini-bridge-mcp.mjs)"]
+    Daemon["Codex daemon (codex app-server daemon / codex queue)"]
+    MCP["gemini-bridge MCP (src/gemini-bridge-mcp.mjs)"]
     Agy["Antigravity CLI (agy -p)"]
 
     Claude -- "send_to_codex (transport: terminal)" --> Bridge
     Bridge -- "queueToTerminalThread" --> Daemon
-    Daemon -- "hàng đợi" --> Codex
+    Daemon -- "queue" --> Codex
     Codex -- "send_to_claude" --> Bridge
     Bridge -- "sendToClaude" --> Claude
     GeminiIDE -- "stdio" --> MCP
-    MCP -- "dùng lại hàm thư viện" --> Bridge
-    Claude -- "gọi dòng lệnh" --> Agy
-    Codex -- "gọi lệnh shell" --> Agy
-    Agy -- "mở phiên mới" --> GeminiIDE
+    MCP -- "reuses library functions" --> Bridge
+    Claude -- "CLI call" --> Agy
+    Codex -- "shell command call" --> Agy
+    Agy -- "opens new session" --> GeminiIDE
 ```
 
-## Mô hình điều phối và xử lý hết quota
+## Coordination model and quota exhaustion handling
 
-- **Điều phối**: Claude phân công việc phù hợp cho Codex và Gemini, đồng thời trực tiếp làm các phần cần ngữ cảnh hội thoại với người dùng, tích hợp, kiểm chứng kết quả và mọi thao tác thuộc nhóm hạn chế (ghi lên production hoặc cụm dùng chung, đọc DB production, `kubectl` hoặc `ssh` có ghi, xử lý credential, xóa không hoàn tác, push, gửi dữ liệu ra ngoài, đổi cấu hình quyền của agent).
-- **Ba cách phối hợp**: chia việc song song, chéo kiểm (một agent đọc lại kết quả của agent khác), hoặc nối tiếp (Gemini tra cứu, Codex hoặc Claude cài đặt, bên còn lại review).
-- **Khi hết quota**: Nếu Codex hoặc Gemini báo lỗi hết quota (nhận diện ước đoán ban đầu qua các từ khóa `quota`, `usage limit`, `rate limit`, `resource exhausted`, `credits`, hoặc mã `429`, `402`), phần việc đó được chuyển nguyên vẹn cho agent còn lại; nếu cả hai đều hết quota, Claude tự thực hiện và báo cho người dùng. Việc chuyển giao khi hết quota hiện ở mức [BÁO CÁO] (người bảo trì báo cáo đã dùng thật trong hai ngày, nhưng repo này không có nhật ký lưu lại).
+- **Coordination**: Claude assigns suitable tasks to Codex and Gemini while directly handling parts that require user conversation context, integration, result verification, and all restricted operations (writing to production or shared clusters, reading production DBs, write-capable `kubectl` or `ssh`, handling credentials, irreversible deletion, pushing, sending data externally, or changing agent permission settings).
+- **Three collaboration patterns**: parallel task splitting, cross-checking (one agent reviews another agent's output), or sequential pipelines (Gemini researches, Codex or Claude implements, the remaining side reviews).
+- **On quota exhaustion**: If Codex or Gemini reports a quota error (initially estimated via keywords `quota`, `usage limit`, `rate limit`, `resource exhausted`, `credits`, or codes `429`, `402`), that task is handed over intact to the remaining agent; if both are out of quota, Claude performs the work itself and informs the user. Quota-exhaustion handoff is currently at the [REPORTED] level (the maintainer reports having used it in practice over two days, but this repo does not have saved logs).
 
-## Cấu trúc thư mục
+## Directory structure
 
 - `src/`:
-  - `src/gemini-bridge-mcp.mjs`: Máy chủ MCP giao tiếp qua `stdio` viết bằng Node (không dùng phụ thuộc ngoài), cung cấp cho Gemini bốn công cụ `list_claude_sessions`, `send_to_claude`, `list_codex_chats`, `send_to_codex` bằng cách gọi lại thư viện của bridge. [ĐÃ KIỂM: `npm test` đạt trên Windows với Node 24.15 (xem README, mục Chạy kiểm thử); ca gửi thật chỉ chạy khi tự đặt `SESSION_ID` và `BRIDGE_LIB_DIR`].
-  - `src/gemini-send-to-claude.mjs`: Script dòng lệnh dự phòng để gửi một tin tới phiên Claude khi không dùng MCP.
-- `test/`: Bộ kiểm thử tự động cho `gemini-bridge`; mặc định dùng thư viện bridge giả trong `test/fixtures/` nên chạy được ở máy không có phiên Claude hay Codex.
-- `templates/`: Mẫu khối hướng dẫn điều phối agent (kẹp giữa hai thẻ HTML `dieu-phoi-agent:bat-dau` và `dieu-phoi-agent:ket-thuc`) dùng để chèn vào `<HOME>/.claude/CLAUDE.md`, `<HOME>/.codex/AGENTS.md` và `<HOME>/.gemini/GEMINI.md`.
-- `extras/redact-secrets/`: Hook `PostToolUse` tùy chọn cho Claude Code giúp thay thế các chuỗi bí mật trong đầu ra công cụ bằng `<REDACTED:loại>`. [ĐÃ KIỂM: 12/12 test, chạy thật với PowerShell, Bash, Read, Grep]; [CHƯA KIỂM] với WebFetch, Agent, Glob và công cụ MCP.
-- `docs/`: Tài liệu chi tiết về cài đặt, kiến trúc, xử lý sự cố và bảo mật.
+  - `src/gemini-bridge-mcp.mjs`: Node `stdio` MCP server (no external dependencies) that provides Gemini with four tools - `list_claude_sessions`, `send_to_claude`, `list_codex_chats`, `send_to_codex` - by calling into the bridge library. [VERIFIED: `npm test` passes on Windows with Node 24.15 (see README, Running tests section); the live send test only runs when `SESSION_ID` and `BRIDGE_LIB_DIR` are manually set].
+  - `src/gemini-send-to-claude.mjs`: Fallback CLI script to send a single message to a Claude session when not using MCP.
+- `test/`: Automated test suite for `gemini-bridge`; uses a mock bridge library in `test/fixtures/` by default so it can run on machines without Claude or Codex sessions.
+- `templates/`: Template block of agent coordination instructions (delimited by HTML tags `dieu-phoi-agent:bat-dau` and `dieu-phoi-agent:ket-thuc`) to be inserted into `<HOME>/.claude/CLAUDE.md`, `<HOME>/.codex/AGENTS.md`, and `<HOME>/.gemini/GEMINI.md`.
+- `extras/redact-secrets/`: Optional `PostToolUse` hook for Claude Code that replaces secret strings in tool output with `<REDACTED:kind>`. [VERIFIED: 12/12 tests, run live with PowerShell, Bash, Read, Grep]; [NOT TESTED] with WebFetch, Agent, Glob, and MCP tools.
+- `docs/`: Detailed documentation on setup, architecture, troubleshooting, and security.
 
-## Chạy kiểm thử
+## Running tests
 
 ```
 npm test
 ```
 
-Cần Node >= 20, không có phụ thuộc cần cài. Mới chạy với Node 24.15 trên Windows (38 test, 37 đạt, 1 bỏ qua). Ca gửi tin thật bị bỏ qua trừ khi bạn tự đặt `SESSION_ID` và `BRIDGE_LIB_DIR` trỏ tới bridge thật. Workflow CI trong `.github/workflows/test.yml` (Ubuntu, Windows, macOS với Node 20 và 22) đã chạy lần đầu ngày 30/10/2026: 5 trong 6 tổ hợp đạt (Ubuntu, Windows và macOS với Node 20, cùng Ubuntu và Windows với Node 22). Tổ hợp macOS với Node 22 bị hủy hai lần vì GitHub không cấp được máy chạy macOS (lỗi hạ tầng, job chưa chạy bước nào), nên tổ hợp đó chưa được kiểm. CI chỉ kiểm logic bằng thư viện giả, không chứng minh tích hợp với Claude, Codex hay Gemini thật; các hướng dẫn cài đặt vẫn chỉ được thử trên Windows.
+Requires Node >= 20, with no dependencies to install. Tested with Node 24.15 on Windows (38 tests, 37 passed, 1 skipped). The live message-sending test is skipped unless you manually set `SESSION_ID` and `BRIDGE_LIB_DIR` pointing to a real bridge. The CI workflow in `.github/workflows/test.yml` runs on Ubuntu, Windows and macOS with Node 20 and 22. It ran on 30 Oct 2026, and all 6 combinations passed at least once across two runs on two commits whose code was identical (they differed only in the README). The macOS with Node 22 job was cancelled twice in the first run because GitHub could not allocate a macOS runner (an infrastructure error; the job ran no steps) and passed in the second run. CI only tests logic using the mock library; it does not prove integration with real Claude, Codex or Gemini installations, and the installation instructions have only been tried on Windows.
 
-## Tài liệu chi tiết
+## Detailed documentation
 
-- Hướng dẫn cài đặt và cấu hình từng bước: [docs/SETUP.md](docs/SETUP.md)
-- Kiến trúc, luồng tin nhắn, danh tính và mô hình điều phối: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Các lỗi thực tế đã gặp và cách khắc phục: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- Mô hình tin cậy, phân quyền và bảo mật: [docs/SECURITY.md](docs/SECURITY.md)
+The detailed documents under `docs/` are written in Vietnamese only:
 
-## Ghi công
+- Step-by-step installation and configuration guide: [docs/SETUP.md](docs/SETUP.md)
+- Architecture, message flows, identity, and coordination model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Real-world errors encountered and how to fix them: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- Trust model, permissions, and security: [docs/SECURITY.md](docs/SECURITY.md)
 
-Thiết lập này dựa trên dự án mã nguồn mở `KeeVeeG/codex-claude-desktop-bridge` (giấy phép MIT) của tác giả KeeVeeG để kết nối giữa Claude Code và Codex. Bản phát hành `v0.4.0` của bridge gốc chỉ nhận các phiên Claude có entrypoint `claude-desktop`, `cli`, `sdk-cli`; hỗ trợ cho extension VS Code (`claude-vscode`) đã được chúng tôi gửi qua PR #5 và merge vào nhánh `main` ngày `2026-10-29` (commit merge `3ac8488`). Do chưa rõ đã có tag phát hành mới chứa bản vá này hay chưa, người dùng cần cài từ nhánh `main` tính từ commit `3ac8488` trở đi.
+## Credits
 
-Repo `claude-codex-gemini-bridge` này **không chứa mã nguồn** của `KeeVeeG/codex-claude-desktop-bridge`, mà chỉ hướng dẫn cách cài đặt và nạp lại các hàm thư viện từ thư mục `<thư mục bridge>/lib/` của dự án đó.
+This setup is based on the open-source project `KeeVeeG/codex-claude-desktop-bridge` (MIT license) by author KeeVeeG for connecting Claude Code and Codex. Release `v0.4.0` of the upstream bridge only recognized Claude sessions with entrypoints `claude-desktop`, `cli`, `sdk-cli`; support for the VS Code extension (`claude-vscode`) was submitted by us via PR #5 and merged into the `main` branch on `2026-10-29` (merge commit `3ac8488`). Because it is unclear whether a new release tag containing this patch exists yet, users need to install from the `main` branch starting from commit `3ac8488` onward.
 
-## Giấy phép
+This `claude-codex-gemini-bridge` repo **does not contain the source code** of `KeeVeeG/codex-claude-desktop-bridge`, and only documents how to install it and load library functions from the `<bridge directory>/lib/` folder of that project.
 
-Dự án này được phát hành theo giấy phép MIT.
+## License
+
+This project is released under the MIT license.
