@@ -1,5 +1,7 @@
 # Chính sách và Mô hình Bảo mật (Security)
 
+Tiếng Việt | [English](en/SECURITY.md)
+
 Tài liệu này mô tả mô hình tin cậy, bề mặt tấn công, các quy tắc an toàn khi vận hành `claude-codex-gemini-bridge` và cách báo cáo lỗ hổng bảo mật. Mọi thông tin kiểm chứng thực tế (`[ĐÃ KIỂM]`) trong tài liệu này được thực hiện trên Windows 11; các hệ điều hành và môi trường khác hiện ở trạng thái `[CHƯA KIỂM]`.
 
 ## 1. Mô hình tin cậy

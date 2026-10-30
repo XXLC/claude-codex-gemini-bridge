@@ -1,5 +1,7 @@
 # Xử lý sự cố (Troubleshooting)
 
+Tiếng Việt | [English](en/TROUBLESHOOTING.md)
+
 Tài liệu này tổng hợp các bẫy kỹ thuật đã đo nguyên nhân gốc trên môi trường Windows 11 (`[ĐÃ KIỂM]`), cách kiểm tra biến môi trường `PATH` và cách phân biệt lỗi hết quota với lỗi kỹ thuật của công việc. Các hệ điều hành khác (macOS, Linux) hoặc máy khác hiện ở trạng thái `[CHƯA KIỂM]`.
 
 ## 1. Bảng triệu chứng, nguyên nhân gốc và cách xử lý

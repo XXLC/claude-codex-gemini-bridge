@@ -1,5 +1,7 @@
 # Hướng dẫn cài đặt claude-codex-gemini-bridge
 
+Tiếng Việt | [English](en/SETUP.md)
+
 Tài liệu này hướng dẫn cài đặt hệ thống kết nối ba agent lập trình chạy cục bộ: Claude Code (Anthropic), Codex (OpenAI) và Gemini (Google, qua Antigravity). Trong mô hình này, Claude là agent điều phối và trực tiếp làm việc; Codex và Gemini nhận phần việc được giao hoặc nhận việc chuyển tiếp khi một bên hết quota.
 
 ## Sơ đồ liên lạc tổng quan
@@ -30,7 +32,7 @@ Cấu hình duy nhất đã kiểm thực tế (`[ĐÃ KIỂM]`):
 Cảnh báo về hệ điều hành và môi trường khác:
 - Các hệ điều hành macOS, Linux, máy Windows khác hoặc IDE khác đều ở trạng thái `[CHƯA KIỂM]`.
 - Đường dẫn tới thư viện của bridge trong repo này đã tham số hóa (`BRIDGE_LIB_DIR`), nhưng các lệnh cài đặt dưới đây viết cho Windows. Bridge gốc có tuyên bố hỗ trợ macOS qua SSH nhưng tính năng đó `[CHƯA KIỂM]` trong phạm vi tài liệu này.
-- Mọi bước bên dưới có dùng lệnh PowerShell, đường dẫn kiểu Windows (`~`, `%LOCALAPPDATA%`, `codex.exe`, `agy.exe`) và Task Scheduler đều chỉ được thực hiện trên Windows và `[CHƯA KIỂM]` ở hệ điều hành khác.
+- Mọi bước bên dưới có dùng lệnh PowerShell, đường dẫn kiểu Windows (`~`, `%LOCALAPPDATA%`, `codex.exe`, `agy.exe`) và Task Scheduler đều mới chỉ được thực hiện trên Windows và `[CHƯA KIỂM]` ở hệ điều hành khác.
 
 ## 2. Cài đặt bridge của KeeVeeG (Claude <-> Codex)
 
@@ -324,8 +326,8 @@ Bảng dưới đây liệt kê các chiều liên lạc và cách kiểm tra t�
 | Codex -> Claude | Trong phiên Codex, gọi công cụ `send_to_claude` của bridge (dùng `list_claude_sessions` để lấy ID phiên). | `[ĐÃ KIỂM]` |
 | Gemini -> Claude | Trong phiên Gemini, gọi công cụ `list_claude_sessions` rồi `send_to_claude` của MCP `gemini-bridge`. Nếu không dùng MCP, chạy script dự phòng: `node <thư mục repo>/src/gemini-send-to-claude.mjs --to <session_id> --message "<nội dung>"` (hoặc truyền nội dung qua stdin, kết thúc bằng EOF). Tên người gửi lấy từ biến `AGENT_NAME`; script không có tùy chọn `--from`. `<session_id>` lấy từ `list_claude_sessions`. | `[ĐÃ KIỂM]` |
 | Gemini -> Codex | Trong phiên Gemini, gọi công cụ `list_codex_chats` rồi `send_to_codex` của MCP `gemini-bridge` (tin đi qua `codex queue`). | `[ĐÃ KIỂM]` (chưa rõ phía Codex đọc lúc nào, chưa đo độ trễ trong extension) |
-| Claude -> Gemini | Từ Claude, chạy lệnh mở một phiên Gemini mới: `agy --model <m> --print-timeout <t> [--dangerously-skip-permissions] -p $lờiNhắc` (hoặc `-p "<lời nhắc>"`). | `[ĐÃ KIỂM]` |
-| Codex -> Gemini | Từ Codex, dùng lệnh shell chạy: `agy --model <m> --print-timeout <t> [--dangerously-skip-permissions] -p $lờiNhắc` (hoặc `-p "<lời nhắc>"`). | `[ĐÃ KIỂM]` |
+| Claude -> Gemini | Từ Claude, chạy lệnh mở một phiên Gemini mới: `agy --model <m> --print-timeout <t> [--dangerously-skip-permissions] -p $prompt` (hoặc `-p "<lời nhắc>"`). | `[ĐÃ KIỂM]` |
+| Codex -> Gemini | Từ Codex, dùng lệnh shell chạy: `agy --model <m> --print-timeout <t> [--dangerously-skip-permissions] -p $prompt` (hoặc `-p "<lời nhắc>"`). | `[ĐÃ KIỂM]` |
 
 Lưu ý khi kiểm tra:
 - Không chiều liên lạc nào có xác nhận đã đọc (`acknowledged: false`).

@@ -1,5 +1,7 @@
 # Kiến trúc hệ thống và mô hình điều phối
 
+Tiếng Việt | [English](en/ARCHITECTURE.md)
+
 Tài liệu này mô tả chi tiết các thành phần, luồng truyền tin theo từng chiều, cơ chế định danh, giới hạn kỹ thuật của từng kênh giao tiếp và quy tắc điều phối công việc giữa ba agent Claude Code, Codex và Gemini.
 
 Lưu ý về phạm vi kiểm chứng: Mọi thông tin có nhãn `[ĐÃ KIỂM]` đều được đo trên một máy Windows 11 duy nhất (Claude Code `2.1.312`, Codex CLI `0.165.0`, Antigravity CLI `agy` `1.4.10`, Node `24.15`). Các hệ điều hành khác (macOS, Linux) và máy khác hoàn toàn ở trạng thái `[CHƯA KIỂM]`.

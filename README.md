@@ -8,7 +8,7 @@ Documentation and supporting tools that let three locally running coding agents 
 
 Note upfront: All setup steps, source code, and instructions in this repo have only been tested on a single Windows machine.
 
-Status labels: [VERIFIED] = actually run and observed; [REPORTED] = stated by the maintainer without logs in this repo; [NOT TESTED] = never tried. Note that the detailed documents under `docs/` still use the Vietnamese labels (ĐÃ KIỂM = VERIFIED, BÁO CÁO = REPORTED, CHƯA KIỂM = NOT TESTED).
+Status labels: [VERIFIED] = actually run and observed; [REPORTED] = stated by the maintainer without logs in this repo; [NOT TESTED] = never tried. The Vietnamese originals under `docs/` use the Vietnamese labels (ĐÃ KIỂM = VERIFIED, BÁO CÁO = REPORTED, CHƯA KIỂM = NOT TESTED); the English translations under `docs/en/` use the English ones.
 
 - **Tested environment ([VERIFIED])**: Windows 11 (single machine), Claude Code `2.1.312` (extension running in VS Code and in Antigravity IDE), Codex CLI `0.165.0` (installed via `npm`, with IDE extension), Antigravity CLI `agy` `1.4.10`, Node `24.15`.
 - **Untested environments ([NOT TESTED])**: macOS, Linux, other Windows machines, other IDEs, and multi-machine setups. The path to the bridge library has been parameterized (`BRIDGE_LIB_DIR` variable) and the test suite runs on machines without Claude or Codex using a mock library, but the installation instructions (PowerShell, `%LOCALAPPDATA%`, Task Scheduler, `codex.exe`) are still written for Windows. The upstream bridge's claimed macOS support over SSH has also not been tested by us ([NOT TESTED]).
@@ -66,7 +66,7 @@ flowchart TB
 - `test/`: Automated test suite for `gemini-bridge`; uses a mock bridge library in `test/fixtures/` by default so it can run on machines without Claude or Codex sessions.
 - `templates/`: Template block of agent coordination instructions (delimited by HTML tags `dieu-phoi-agent:bat-dau` and `dieu-phoi-agent:ket-thuc`) to be inserted into `<HOME>/.claude/CLAUDE.md`, `<HOME>/.codex/AGENTS.md`, and `<HOME>/.gemini/GEMINI.md`.
 - `extras/redact-secrets/`: Optional `PostToolUse` hook for Claude Code that replaces secret strings in tool output with `<REDACTED:kind>`. [VERIFIED: 12/12 tests, run live with PowerShell, Bash, Read, Grep]; [NOT TESTED] with WebFetch, Agent, Glob, and MCP tools.
-- `docs/`: Detailed documentation on setup, architecture, troubleshooting, and security.
+- `docs/`: Detailed documentation on setup, architecture, troubleshooting, and security. The Vietnamese originals are in `docs/`; the English translations are in `docs/en/`.
 
 ## Running tests
 
@@ -78,13 +78,12 @@ Requires Node >= 20, with no dependencies to install. Tested with Node 24.15 on 
 
 ## Detailed documentation
 
-The detailed documents under `docs/` are written in Vietnamese only:
+The Vietnamese documents are the originals (maintained by hand). The English versions in `docs/en/` were translated by Gemini and then cross-checked against the Vietnamese text by Codex and by automated structure checks; if they ever disagree, the Vietnamese original is authoritative. Code comments, error messages, test names and the files under `templates/` are still in Vietnamese.
 
-- Step-by-step installation and configuration guide: [docs/SETUP.md](docs/SETUP.md)
-- Architecture, message flows, identity, and coordination model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Real-world errors encountered and how to fix them: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- Trust model, permissions, and security: [docs/SECURITY.md](docs/SECURITY.md)
-
+- Step-by-step installation and configuration guide: [docs/en/SETUP.md](docs/en/SETUP.md) ([Vietnamese](docs/SETUP.md))
+- Architecture, message flows, identity, and coordination model: [docs/en/ARCHITECTURE.md](docs/en/ARCHITECTURE.md) ([Vietnamese](docs/ARCHITECTURE.md))
+- Real-world errors encountered and how to fix them: [docs/en/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) ([Vietnamese](docs/TROUBLESHOOTING.md))
+- Trust model, permissions, and security: [docs/en/SECURITY.md](docs/en/SECURITY.md) ([Vietnamese](docs/SECURITY.md))
 ## Credits
 
 This setup is based on the open-source project `KeeVeeG/codex-claude-desktop-bridge` (MIT license) by author KeeVeeG for connecting Claude Code and Codex. Release `v0.4.0` of the upstream bridge only recognized Claude sessions with entrypoints `claude-desktop`, `cli`, `sdk-cli`; support for the VS Code extension (`claude-vscode`) was submitted by us via PR #5 and merged into the `main` branch on `2026-10-29` (merge commit `3ac8488`). Because it is unclear whether a new release tag containing this patch exists yet, users need to install from the `main` branch starting from commit `3ac8488` onward.

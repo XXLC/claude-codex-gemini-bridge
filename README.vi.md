@@ -64,7 +64,7 @@ flowchart TB
 - `test/`: Bộ kiểm thử tự động cho `gemini-bridge`; mặc định dùng thư viện bridge giả trong `test/fixtures/` nên chạy được ở máy không có phiên Claude hay Codex.
 - `templates/`: Mẫu khối hướng dẫn điều phối agent (kẹp giữa hai thẻ HTML `dieu-phoi-agent:bat-dau` và `dieu-phoi-agent:ket-thuc`) dùng để chèn vào `<HOME>/.claude/CLAUDE.md`, `<HOME>/.codex/AGENTS.md` và `<HOME>/.gemini/GEMINI.md`.
 - `extras/redact-secrets/`: Hook `PostToolUse` tùy chọn cho Claude Code giúp thay thế các chuỗi bí mật trong đầu ra công cụ bằng `<REDACTED:loại>`. [ĐÃ KIỂM: 12/12 test, chạy thật với PowerShell, Bash, Read, Grep]; [CHƯA KIỂM] với WebFetch, Agent, Glob và công cụ MCP.
-- `docs/`: Tài liệu chi tiết về cài đặt, kiến trúc, xử lý sự cố và bảo mật.
+- `docs/`: Tài liệu chi tiết về cài đặt, kiến trúc, xử lý sự cố và bảo mật (bản gốc tiếng Việt); bản dịch tiếng Anh nằm ở `docs/en/`.
 
 ## Chạy kiểm thử
 
@@ -76,11 +76,12 @@ Cần Node >= 20, không có phụ thuộc cần cài. Mới chạy với Node 2
 
 ## Tài liệu chi tiết
 
-- Hướng dẫn cài đặt và cấu hình từng bước: [docs/SETUP.md](docs/SETUP.md)
-- Kiến trúc, luồng tin nhắn, danh tính và mô hình điều phối: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Các lỗi thực tế đã gặp và cách khắc phục: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- Mô hình tin cậy, phân quyền và bảo mật: [docs/SECURITY.md](docs/SECURITY.md)
+Bản tiếng Việt là bản gốc (viết và duy trì chính). Bản tiếng Anh trong `docs/en/` do Gemini dịch rồi được Codex đối chiếu với bản tiếng Việt và kiểm tra cấu trúc bằng máy; nếu hai bản khác nhau thì lấy bản tiếng Việt. Chú thích trong mã, thông báo lỗi, tên test và các tệp trong `templates/` vẫn bằng tiếng Việt.
 
+- Hướng dẫn cài đặt và cấu hình từng bước: [docs/SETUP.md](docs/SETUP.md) ([English](docs/en/SETUP.md))
+- Kiến trúc, luồng tin nhắn, danh tính và mô hình điều phối: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ([English](docs/en/ARCHITECTURE.md))
+- Các lỗi thực tế đã gặp và cách khắc phục: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) ([English](docs/en/TROUBLESHOOTING.md))
+- Mô hình tin cậy, phân quyền và bảo mật: [docs/SECURITY.md](docs/SECURITY.md) ([English](docs/en/SECURITY.md))
 ## Ghi công
 
 Thiết lập này dựa trên dự án mã nguồn mở `KeeVeeG/codex-claude-desktop-bridge` (giấy phép MIT) của tác giả KeeVeeG để kết nối giữa Claude Code và Codex. Bản phát hành `v0.4.0` của bridge gốc chỉ nhận các phiên Claude có entrypoint `claude-desktop`, `cli`, `sdk-cli`; hỗ trợ cho extension VS Code (`claude-vscode`) đã được chúng tôi gửi qua PR #5 và merge vào nhánh `main` ngày `2026-10-29` (commit merge `3ac8488`). Do chưa rõ đã có tag phát hành mới chứa bản vá này hay chưa, người dùng cần cài từ nhánh `main` tính từ commit `3ac8488` trở đi.
