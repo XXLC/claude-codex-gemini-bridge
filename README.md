@@ -70,7 +70,7 @@ flowchart TB
 npm test
 ```
 
-Cần Node >= 20, không có phụ thuộc cần cài. Mới chạy với Node 24.15 trên Windows (38 test, 37 đạt, 1 bỏ qua). Ca gửi tin thật bị bỏ qua trừ khi bạn tự đặt `SESSION_ID` và `BRIDGE_LIB_DIR` trỏ tới bridge thật. Workflow CI trong `.github/workflows/test.yml` (Ubuntu, Windows, macOS với Node 20 và 22) chưa chạy lần nào; khi chạy, nó chỉ kiểm logic bằng thư viện giả, không chứng minh tích hợp với Claude, Codex hay Gemini thật.
+Cần Node >= 20, không có phụ thuộc cần cài. Mới chạy với Node 24.15 trên Windows (38 test, 37 đạt, 1 bỏ qua). Ca gửi tin thật bị bỏ qua trừ khi bạn tự đặt `SESSION_ID` và `BRIDGE_LIB_DIR` trỏ tới bridge thật. Workflow CI trong `.github/workflows/test.yml` (Ubuntu, Windows, macOS với Node 20 và 22) đã chạy lần đầu ngày 30/10/2026: 5 trong 6 tổ hợp đạt (Ubuntu, Windows và macOS với Node 20, cùng Ubuntu và Windows với Node 22). Tổ hợp macOS với Node 22 bị hủy hai lần vì GitHub không cấp được máy chạy macOS (lỗi hạ tầng, job chưa chạy bước nào), nên tổ hợp đó chưa được kiểm. CI chỉ kiểm logic bằng thư viện giả, không chứng minh tích hợp với Claude, Codex hay Gemini thật; các hướng dẫn cài đặt vẫn chỉ được thử trên Windows.
 
 ## Tài liệu chi tiết
 
