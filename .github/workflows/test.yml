@@ -1,0 +1,22 @@
+# CI chỉ kiểm tra logic bằng thư viện giả, KHÔNG chứng minh tích hợp với Claude, Codex hay Gemini thật.
+name: Kiểm thử logic bridge
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test

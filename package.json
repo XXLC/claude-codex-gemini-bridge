@@ -1,0 +1,13 @@
+{
+  "name": "claude-codex-gemini-bridge",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/gemini-bridge-mcp.test.mjs extras/redact-secrets/redact-secrets.test.mjs"
+  }
+}
