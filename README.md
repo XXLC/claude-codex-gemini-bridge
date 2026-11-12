@@ -1,5 +1,7 @@
 # claude-codex-gemini-bridge
 
+> **This repository is archived and has moved to [XXLC/ai-standalone-bridge](https://github.com/XXLC/ai-standalone-bridge).** Many tools and applications already route coding agents to one another, so this was only ever a personal setup. It continues, with DeepSeek added, in the new repository. No further changes will be made here.
+
 [Tiếng Việt](README.vi.md) | English
 
 Documentation and supporting tools that let three locally running coding agents - Claude Code (Anthropic), Codex (OpenAI), and Gemini (Google, via Antigravity) - message and delegate tasks directly to one another without the user manually forwarding messages through the chat box. In this model, Claude Code acts as the coordinator while also doing its own share of the work, and Codex and Gemini take assigned tasks or cover for each other when one side runs out of quota.

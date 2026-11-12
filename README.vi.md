@@ -1,5 +1,7 @@
 # claude-codex-gemini-bridge
 
+> **Repo này đã được archive và chuyển sang [XXLC/ai-standalone-bridge](https://github.com/XXLC/ai-standalone-bridge).** Đã có nhiều công cụ và ứng dụng route các agent lập trình với nhau, nên đây vốn chỉ là bản riêng của tác giả. Nó được tiếp nối, có thêm DeepSeek, ở repo mới. Repo này sẽ không còn thay đổi.
+
 Tiếng Việt | [English](README.md)
 
 Tài liệu và bộ công cụ bổ trợ giúp ba agent lập trình chạy cục bộ gồm Claude Code (Anthropic), Codex (OpenAI) và Gemini (Google, qua Antigravity) nhắn tin và giao việc trực tiếp cho nhau mà không cần người dùng chuyển tiếp thủ công qua khung chat. Trong mô hình này, Claude Code giữ vai trò điều phối và trực tiếp làm phần việc của mình, còn Codex và Gemini nhận các phần việc được phân công hoặc thay thế nhau khi một bên hết quota.
